@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hi there!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0a; --accent: #e02020; --accent-glow: rgba(224,32,32,0.15);
+      --text: #f0ede6; --muted: #666; --card-bg: rgba(255,255,255,0.02); --border: rgba(255,255,255,0.07);
+    }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem 1rem; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px 200px; pointer-events: none; z-index: 0; opacity: 0.35;
+    }
+    .blob {
+      position: fixed; width: 520px; height: 520px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      animation: pulse 5s ease-in-out infinite; pointer-events: none; z-index: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    }
+    .card {
+      position: relative; z-index: 1; text-align: center; padding: 2.5rem 3rem;
+      border: 1px solid var(--border); border-radius: 2px; background: var(--card-bg);
+      backdrop-filter: blur(6px); max-width: 580px; width: 100%;
+    }
+    #emoji { font-size: 3rem; display: inline-block; }
+    #emoji.waving { animation: wave 2.4s ease-in-out 0.3s infinite; transform-origin: 70% 70%; }
+    #emoji.finger { animation: shake 0.5s ease-in-out; }
+    @keyframes wave {
+      0%, 60%, 100% { transform: rotate(0deg); } 10%, 30% { transform: rotate(18deg); }
+      20% { transform: rotate(-6deg); } 40% { transform: rotate(12deg); } 50% { transform: rotate(-4deg); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); }
+    }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 9vw, 6rem); line-height: 1; letter-spacing: -0.02em; margin: 0.3rem 0 0.5rem; }
+    h1 .red { color: var(--accent); }
+    .step { display: none; animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .step.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .prompt { font-size: 1.05rem; font-weight: 300; color: var(--text); margin: 1rem 0 1.4rem; line-height: 1.6; }
+    .prompt strong { font-weight: 600; color: var(--accent); }
+    .input-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    input[type="text"], textarea {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 2px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; padding: 0.6rem 1rem; outline: none; transition: border-color 0.2s; resize: none;
+    }
+    input[type="text"] { width: 200px; }
+    textarea { width: 100%; min-height: 80px; margin-bottom: 0.6rem; }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.6rem; text-align: left; }
+    .details-grid label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; display: block; margin-bottom: 0.2rem; }
+    .details-grid input { width: 100%; }
+    .full-width { grid-column: 1 / -1; }
+    .btn { border: none; border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; padding: 0.6rem 1.4rem; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+    .btn:hover { opacity: 0.85; transform: scale(1.03); }
+    .btn:active { transform: scale(0.97); }
+    .btn-red { background: var(--accent); color: #fff; }
+    .btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.12); }
+    .choice-row, .again-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+    .result-box { margin-top: 1.2rem; padding: 1.2rem 1.4rem; border-radius: 2px; border-left: 3px solid var(--accent); background: rgba(224,32,32,0.06); font-size: 1.05rem; line-height: 1.6; text-align: left; min-height: 3.5rem; }
+    .nudge { margin-top: 1.2rem; padding: 1rem 1.2rem; border: 1px dashed rgba(255,255,255,0.12); border-radius: 2px; background: rgba(255,255,255,0.02); text-align: left; cursor: pointer; transition: border-color 0.2s; }
+    .nudge:hover { border-color: var(--accent); }
+    .nudge-title { font-weight: 600; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.2rem; }
+    .nudge-sub { font-size: 0.83rem; color: var(--muted); }
+    .loading-dots span { display: inline-block; animation: blink 1.2s infinite; font-size: 1.4rem; }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+    .small-muted { color: var(--muted); font-size: 0.78rem; margin-top: 0.8rem; }
+    .setup-note { font-size: 0.85rem; color: var(--muted); margin-top: 0.6rem; line-height: 1.5; }
+    .setup-note a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="blob"></div>
+  <div class="card">
+    <div id="emoji" class="waving">👋</div>
+    <h1>Hi<span class="red">!</span></h1>
+
+    <div class="step active" id="step0">
+      <p class="prompt">Before we start, paste your Anthropic API key below.</p>
+      <div class="input-row" style="flex-direction:column; align-items:center; gap:0.75rem;">
+        <input type="text" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%; max-width:400px;" />
+        <button class="btn btn-red" onclick="saveKey()">Let's go →</button>
+      </div>
+      <p class="setup-note">
+        Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.<br/>
+        Your key is only stored in your browser and never shared.
+      </p>
+    </div>
+
+    <div class="step" id="step1">
+      <p class="prompt">Welcome. What's your name?</p>
+      <div class="input-row">
+        <input type="text" id="nameInput" placeholder="Your name..." maxlength="40"/>
+        <button class="btn btn-red" onclick="submitName()">Say hi</button>
+      </div>
+    </div>
+
+    <div class="step" id="step2">
+      <p class="prompt" id="choicePrompt"></p>
+      <div class="choice-row">
+        <button class="btn btn-red" onclick="generate('compliment')">💛 Compliment me</button>
+        <button class="btn btn-ghost" onclick="generate('insult')">🖕 Insult me</button>
+      </div>
+    </div>
+
+    <div class="step" id="step3">
+      <p class="prompt" id="resultLabel"></p>
+      <div class="result-box" id="resultBox">
+        <div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>
+      </div>
+      <div class="nudge" id="nudgeBanner" onclick="goToDetails()" style="display:none;">
+        <div class="nudge-title">✨ Want to make it personal?</div>
+        <div class="nudge-sub">Tell me a little about yourself and I'll tailor the next one just for you.</div>
+      </div>
+      <div class="again-row">
+        <button class="btn btn-ghost" onclick="goAgain()">↩ Do it again</button>
+        <button class="btn btn-ghost" onclick="restart()">Start over</button>
+      </div>
+      <p class="small-muted">Powered by Claude AI</p>
+    </div>
+
+    <div class="step" id="step4">
+      <p class="prompt">Tell me about yourself.</p>
+      <div class="details-grid">
+        <div><label>Age</label><input type="text" id="detailAge" placeholder="e.g. 28"/></div>
+        <div><label>Sex</label><input type="text" id="detailSex" placeholder="e.g. Male"/></div>
+        <div><label>Job</label><input type="text" id="detailJob" placeholder="e.g. Nurse"/></div>
+        <div><label>Height</label><input type="text" id="detailHeight" placeholder="e.g. 5'10"/></div>
+        <div><label>Weight</label><input type="text" id="detailWeight" placeholder="e.g. 180 lbs"/></div>
+        <div><label>Hobbies</label><input type="text" id="detailHobbies" placeholder="e.g. Gaming"/></div>
+        <div class="full-width"><label>Anything else?</label><textarea id="detailExtra" placeholder="Weird facts, quirks, fears — anything goes..."></textarea></div>
+      </div>
+      <div class="choice-row">
+        <button class="btn btn-red" onclick="generatePersonalised('compliment')">💛 Personalised compliment</button>
+        <button class="btn btn-ghost" onclick="generatePersonalised('insult')">🖕 Personalised insult</button>
+      </div>
+      <div style="margin-top:0.75rem; text-align:center;">
+        <button class="btn btn-ghost" style="font-size:0.85rem; padding:0.4rem 1rem;" onclick="goAgain()">← Skip & go back</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let userName = '';
+    let hasSeenResult = false;
+    let apiKey = localStorage.getItem('cai_key') || '';
+    if (apiKey) showStep('step1');
+    document.getElementById('nameInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+    document.getElementById('apiKeyInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
+    function saveKey() {
+      const val = document.getElementById('apiKeyInput').value.trim();
+      if (!val.startsWith('sk-')) { alert("That doesn't look right. It should start with sk-ant-..."); return; }
+      apiKey = val; localStorage.setItem('cai_key', val); showStep('step1');
+    }
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(id); el.classList.remove('active'); void el.offsetWidth; el.classList.add('active');
+    }
+    function setEmoji(type) {
+      const el = document.getElementById('emoji'); el.classList.remove('waving', 'finger'); void el.offsetWidth;
+      if (type === 'wave') { el.textContent = '👋'; el.classList.add('waving'); }
+      else { el.textContent = '🖕'; el.classList.add('finger'); }
+    }
+    function submitName() {
+      const val = document.getElementById('nameInput').value.trim(); if (!val) return;
+      userName = val;
+      document.getElementById('choicePrompt').innerHTML = `<strong>${userName}</strong>, would you like me to compliment you or insult you?`;
+      showStep('step2');
+    }
+    function buildDetails() {
+      const fields = [['age',document.getElementById('detailAge')?.value.trim()],['sex',document.getElementById('detailSex')?.value.trim()],['job',document.getElementById('detailJob')?.value.trim()],['height',document.getElementById('detailHeight')?.value.trim()],['weight',document.getElementById('detailWeight')?.value.trim()],['hobbies',document.getElementById('detailHobbies')?.value.trim()],['extra info',document.getElementById('detailExtra')?.value.trim()]];
+      const parts = fields.filter(([,v]) => v).map(([k,v]) => `${k}: ${v}`);
+      return parts.length ? `Details about them — ${parts.join(', ')}.` : '';
+    }
+    async function callClaude(prompt) {
+      const res = await fetch('/.netlify/functions/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+      const data = await res.json(); if (data.error) throw new Error(data.error);
+      return data.result;
+    }
+    async function generate(type) {
+      setEmoji(type === 'insult' ? 'finger' : 'wave');
+      document.getElementById('resultLabel').innerHTML = type === 'insult' ? `Alright <strong>${userName}</strong>, you asked for it... 😈` : `Coming right up, <strong>${userName}</strong> 💛`;
+      const box = document.getElementById('resultBox');
+      box.innerHTML = '<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>';
+      document.getElementById('nudgeBanner').style.display = 'none'; showStep('step3');
+      const prompt = type === 'compliment' ? `Give a warm, genuine, creative compliment to someone named ${userName}. 2-3 sentences. No intro, just the compliment.` : `Give a hilariously savage but lighthearted roast to someone named ${userName}. Keep it funny, not cruel. 2-3 sentences. No intro, just the roast.`;
+      try { box.textContent = await callClaude(prompt); if (!hasSeenResult) { document.getElementById('nudgeBanner').style.display = 'block'; hasSeenResult = true; } }
+      catch (e) { box.textContent = 'Oops! ' + e.message; }
+    }
+    async function generatePersonalised(type) {
+      const details = buildDetails(); setEmoji(type === 'insult' ? 'finger' : 'wave');
+      document.getElementById('resultLabel').innerHTML = type === 'insult' ? `Oh this one's going to hurt, <strong>${userName}</strong>... 😈` : `This one's just for you, <strong>${userName}</strong> 💛`;
+      const box = document.getElementById('resultBox');
+      box.innerHTML = '<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>';
+      document.getElementById('nudgeBanner').style.display = 'none'; showStep('step3');
+      const prompt = type === 'compliment' ? `Give a warm, personalised compliment to someone named ${userName}. ${details} Use their details to make it specific. 2-3 sentences. No intro, just the compliment.` : `Give a savage, personalised roast to someone named ${userName}. ${details} Use their details to make it funny and targeted. Keep it lighthearted. 2-3 sentences. No intro, just the roast.`;
+      try { box.textContent = await callClaude(prompt); }
+      catch (e) { box.textContent = 'Oops! ' + e.message; }
+    }
+    function goToDetails() { showStep('step4'); }
+    function goAgain() { setEmoji('wave'); document.getElementById('choicePrompt').innerHTML = `<strong>${userName}</strong>, want another one?`; showStep('step2'); }
+    function restart() { setEmoji('wave'); hasSeenResult = false; document.getElementById('nameInput').value = ''; showStep('step1'); }
+  </script>
+</body>
+</html>
